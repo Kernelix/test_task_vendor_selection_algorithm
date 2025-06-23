@@ -1,0 +1,52 @@
+FROM php:8.3-fpm-alpine
+
+# Установка зависимостей
+RUN apk add --no-cache \
+    git \
+    unzip \
+    curl \
+    libzip-dev \
+    icu-dev \
+    postgresql-dev \
+    autoconf \
+    g++ \
+    make
+
+# Установка расширений PHP
+RUN docker-php-ext-install -j$(nproc) \
+    intl \
+    pdo_pgsql \
+    opcache
+
+RUN apk add --update linux-headers
+
+# Установка Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Настройки PHP
+COPY docker/php/conf/php.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf/xdebug.ini /usr/local/etc/php/conf.d/
+RUN mv /usr/local/etc/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Рабочая директория
+WORKDIR /var/www
+
+
+
+# Установка зависимостей
+COPY composer.* ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# Копирование исходного кода
+COPY . .
+
+# Оптимизация автозагрузки
+RUN composer dump-autoload --optimize --no-dev
+
+# Права доступа
+RUN chown -R www-data:www-data /var/www
+
+CMD ["php-fpm"]
