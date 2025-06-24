@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 class PurchasingPlanner
@@ -37,7 +39,7 @@ class PurchasingPlanner
         $groupData = [];
         foreach ($groups as $pack => $group) {
             $suppliersInGroup = $this->prepareSuppliers($group, $pack);
-            usort($suppliersInGroup, fn($a, $b) => $a['c'] <=> $b['c']);
+            usort($suppliersInGroup, fn ($a, $b) => $a['c'] <=> $b['c']);
 
             [$prefixQty, $prefixCost, $totalQty] = $this->calculatePrefixSums($suppliersInGroup);
             $tMax = min($totalQty, (int)($n / $pack));
@@ -85,7 +87,9 @@ class PurchasingPlanner
         $costGroup[0] = 0;
 
         for ($k = 1; $k <= $tMax; $k++) {
-            if ($k > $totalQty) break;
+            if ($k > $totalQty) {
+                break;
+            }
 
             $idx = $this->binarySearch($prefixQty, $k);
             $supplierIdx = min($idx, count($suppliers) - 1);
@@ -151,7 +155,9 @@ class PurchasingPlanner
                     $kMax = min($s, $tMaxGroup);
                     for ($k = 0; $k <= $kMax; $k++) {
                         $j = $s - $k;
-                        if ($j < 0 || $arr_r[$j] === INF) continue;
+                        if ($j < 0 || $arr_r[$j] === INF) {
+                            continue;
+                        }
                         $cost = $arr_r[$j] + $costGroup[$k];
                         if ($cost < $new_arr_r[$s]) {
                             $new_arr_r[$s] = $cost;
@@ -186,11 +192,15 @@ class PurchasingPlanner
             $choice = $choices[$i];
             $k = $choice[$x] ?? -1;
 
-            if ($k <= 0) continue;
+            if ($k <= 0) {
+                continue;
+            }
 
             $remaining = $k;
             foreach ($group['suppliers'] as $s) {
-                if ($remaining <= 0) break;
+                if ($remaining <= 0) {
+                    break;
+                }
                 $take = min($remaining, $s['m']);
                 if ($take > 0) {
                     $result[] = ['id' => $s['id'], 'qty' => $take * $s['pack']];

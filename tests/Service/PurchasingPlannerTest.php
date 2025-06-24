@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
 use App\Service\PurchasingPlanner;
@@ -159,8 +161,11 @@ class PurchasingPlannerTest extends TestCase
 
         $planMap = array_column($plan, 'qty', 'id');
         foreach ($expectedSet as $expectedItem) {
-            $this->assertEquals($expectedItem['qty'], $planMap[$expectedItem['id']],
-                "Несоответствие количества для поставщика {$expectedItem['id']}");
+            $this->assertEquals(
+                $expectedItem['qty'],
+                $planMap[$expectedItem['id']],
+                "Несоответствие количества для поставщика {$expectedItem['id']}"
+            );
         }
     }
 
