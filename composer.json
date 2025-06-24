@@ -8,10 +8,9 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-zend-opcache": "*",
-        "beberlei/assert": "^3.3",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
-        "symfony/flex": "^2",
+        "symfony/flex": "^2.7.1",
         "symfony/framework-bundle": "7.2.*",
         "symfony/property-info": "7.2.*",
         "symfony/runtime": "7.2.*",
@@ -71,7 +70,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.75",
-        "phpunit/phpunit": "^12.2",
+        "phpunit/phpunit": "^12.2.3",
         "symfony/maker-bundle": "^1.63"
     }
 }
