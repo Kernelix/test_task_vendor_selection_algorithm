@@ -4,19 +4,19 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/php/Dockerfile.${APP_ENV:-prod}
     container_name: symfony-api
     volumes:
       - .:/var/www
     environment:
-      APP_ENV: ${APP_ENV-dev}
-      APP_DEBUG: ${APP_DEBUG-1}  # Включаем дебаг по умолчанию
-      XDEBUG_MODE: ${XDEBUG_MODE-debug}
-      XDEBUG_CONFIG: "client_host=host.docker.internal"
+      APP_ENV: ${APP_ENV:-dev}
+      APP_DEBUG: ${APP_DEBUG:-1}
+      XDEBUG_MODE: develop,debug
+      XDEBUG_CONFIG: "client_host=host.docker.internal client_port=9004 discover_client_host=0"
     networks:
       - app-network
     extra_hosts:
-      - "host.docker.internal:host-gateway"  # Для работы Xdebug
+      - "host.docker.internal:host-gateway"
 
   webserver:
     image: nginx:alpine

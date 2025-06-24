@@ -1,0 +1,53 @@
+FROM php:8.3-fpm-alpine
+
+# Установка зависимостей
+RUN apk add --no-cache \
+    git \
+    unzip \
+    curl \
+    libzip-dev \
+    icu-dev \
+    postgresql-dev \
+    autoconf \
+    g++ \
+    make
+
+# Установка расширений PHP
+RUN docker-php-ext-install -j$(nproc) \
+    intl \
+    pdo_pgsql \
+    opcache
+
+RUN apk add --update linux-headers
+
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Настройки PHP
+COPY docker/php/conf/php.ini /usr/local/etc/php/conf.d/
+
+# Включаем JIT
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/prod.ini
+RUN echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/prod.ini
+RUN echo "opcache.jit_buffer_size=256M" >> /usr/local/etc/php/conf.d/prod.ini
+RUN echo "opcache.jit=1255" >> /usr/local/etc/php/conf.d/prod.ini
+
+# Рабочая директория
+WORKDIR /var/www
+
+
+
+# Установка зависимостей
+COPY composer.* ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# Копирование исходного кода
+COPY . .
+
+# Оптимизация автозагрузки
+RUN composer dump-autoload --optimize --no-dev
+
+# Права доступа
+RUN chown -R www-data:www-data /var/www
+
+CMD ["php-fpm", "-F", "-O"]
