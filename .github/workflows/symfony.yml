@@ -1,0 +1,60 @@
+name: "Symfony Code Quality Pipeline"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  code-quality:
+    name: "Code Quality Checks"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Полная история для работы с git
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-scripts --no-interaction
+
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit
+
+      - name: Run PHPStan (level 5)
+        run: vendor/bin/phpstan analyse --level=5 --configuration=phpstan.neon
+
+      - name: Fix coding style with PHP-CS-Fixer
+        run: vendor/bin/php-cs-fixer fix --diff --verbose
+        continue-on-error: true  # Продолжать даже при ошибках стиля
+
+      - name: Commit and push style fixes
+        if: success() || failure()  # Запускать даже если предыдущие шаги упали
+        run: |
+          # Настройка git
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git config --global --add safe.directory /github/workspace
+          
+          # Добавление изменений
+          git add .
+          
+          # Проверка наличия изменений
+          if ! git diff --cached --quiet; then
+            git commit -m "Apply automatic code style fixes [ci skip]"
+            git pull --rebase origin main
+            git push origin main
+            echo "Code style fixes pushed"
+          else
+            echo "No code style changes to commit"
+          fi
