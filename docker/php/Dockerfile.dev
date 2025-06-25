@@ -20,6 +20,8 @@ RUN docker-php-ext-install -j$(nproc) \
 
 RUN apk add --update linux-headers
 
+RUN echo "opcache.jit=0" >> /usr/local/etc/php/conf.d/opcache.ini
+
 # Установка Xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 
@@ -27,7 +29,7 @@ RUN pecl install xdebug && docker-php-ext-enable xdebug
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Настройки PHP
-COPY docker/php/conf/php.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf/dev/php.ini /usr/local/etc/php/conf.d/
 COPY docker/php/conf/xdebug.ini /usr/local/etc/php/conf.d/
 RUN mv /usr/local/etc/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
@@ -48,5 +50,11 @@ RUN composer dump-autoload --optimize --no-dev
 
 # Права доступа
 RUN chown -R www-data:www-data /var/www
+
+RUN mkdir -p /tmp/xdebug-profiler && \
+    chown -R www-data:www-data /tmp/xdebug-profiler && \
+    chmod -R 777 /tmp/xdebug-profiler
+
+
 
 CMD ["php-fpm"]

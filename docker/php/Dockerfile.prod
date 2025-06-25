@@ -24,7 +24,7 @@ RUN apk add --update linux-headers
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Настройки PHP
-COPY docker/php/conf/php.ini /usr/local/etc/php/conf.d/
+COPY docker/php/conf/prod/php.ini /usr/local/etc/php/conf.d/
 
 # Включаем JIT
 RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/prod.ini
